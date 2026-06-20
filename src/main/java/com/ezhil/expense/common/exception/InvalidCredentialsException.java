@@ -1,0 +1,9 @@
+package com.ezhil.expense.common.exception;
+
+public class InvalidCredentialsException
+        extends RuntimeException {
+
+    public InvalidCredentialsException() {
+        super("Invalid email or password");
+    }
+}
