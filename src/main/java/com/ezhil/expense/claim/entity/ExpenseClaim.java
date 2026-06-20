@@ -61,6 +61,8 @@ public class ExpenseClaim {
 
     @Column(length = 1000)
     private String financeComments;
+    @Column(length = 500)
+    private String receiptPath;
 
     @PrePersist
     public void prePersist() {

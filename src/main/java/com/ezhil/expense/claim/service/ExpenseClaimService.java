@@ -4,6 +4,7 @@ import com.ezhil.expense.audit.dto.ClaimAuditResponse;
 import com.ezhil.expense.claim.dto.CreateExpenseClaimRequest;
 import com.ezhil.expense.claim.dto.ExpenseClaimResponse;
 import com.ezhil.expense.claim.dto.UpdateExpenseClaimRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +43,11 @@ public interface ExpenseClaimService {
     );
     List<ClaimAuditResponse> getClaimTimeline(
             UUID claimId,
+            String email
+    );
+    ExpenseClaimResponse uploadReceipt(
+            UUID claimId,
+            MultipartFile file,
             String email
     );
 }

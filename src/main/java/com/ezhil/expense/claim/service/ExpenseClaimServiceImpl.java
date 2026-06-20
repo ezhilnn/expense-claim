@@ -9,10 +9,12 @@ import com.ezhil.expense.claim.entity.ExpenseClaim;
 import com.ezhil.expense.claim.repository.ExpenseClaimRepository;
 import com.ezhil.expense.common.enums.ClaimStatus;
 import com.ezhil.expense.common.exception.*;
+import com.ezhil.expense.storage.FileStorageService;
 import com.ezhil.expense.user.entity.User;
 import com.ezhil.expense.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +28,7 @@ public class ExpenseClaimServiceImpl
     private final ExpenseClaimRepository expenseClaimRepository;
     private final UserRepository userRepository;
     private final ClaimAuditService claimAuditService;
+    private final FileStorageService fileStorageService;
 
     @Override
     public ExpenseClaimResponse createClaim(
@@ -290,5 +293,52 @@ public class ExpenseClaimServiceImpl
         return claimAuditService
                 .getClaimTimeline(claim);
     }
+    @Override
+    public ExpenseClaimResponse uploadReceipt(
+            UUID claimId,
+            MultipartFile file,
+            String email
+    ) {
 
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow();
+
+        ExpenseClaim claim =
+                expenseClaimRepository
+                        .findByIdAndCreatedBy(
+                                claimId,
+                                user
+                        )
+                        .orElseThrow(
+                                ClaimNotFoundException::new
+                        );
+
+        if (claim.getStatus() != ClaimStatus.DRAFT
+                && claim.getStatus() != ClaimStatus.SUBMITTED) {
+
+            throw new InvalidClaimStateException(
+                    "Receipt can only be uploaded for draft or submitted claims"
+            );
+        }
+
+        String receiptUrl =
+                fileStorageService.uploadFile(file);
+
+        claim.setReceiptPath(
+                receiptUrl
+        );
+
+        ExpenseClaim updated =
+                expenseClaimRepository.save(claim);
+
+        return new ExpenseClaimResponse(
+                updated.getId(),
+                updated.getTitle(),
+                updated.getDescription(),
+                updated.getAmount(),
+                updated.getStatus(),
+                updated.getCreatedAt()
+        );
+    }
 }

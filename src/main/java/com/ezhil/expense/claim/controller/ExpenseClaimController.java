@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -172,6 +173,27 @@ public class ExpenseClaimController {
                 true,
                 "Claim timeline fetched successfully",
                 timeline
+        );
+    }
+    @PostMapping("/{claimId}/receipt")
+    public ApiResponse<ExpenseClaimResponse>
+    uploadReceipt(
+            @PathVariable UUID claimId,
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication
+    ) {
+
+        ExpenseClaimResponse response =
+                expenseClaimService.uploadReceipt(
+                        claimId,
+                        file,
+                        authentication.getName()
+                );
+
+        return new ApiResponse<>(
+                true,
+                "Receipt uploaded successfully",
+                response
         );
     }
 }
